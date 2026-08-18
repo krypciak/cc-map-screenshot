@@ -198,9 +198,9 @@ function setPerf(enableFilter: boolean) {
             ig.perf.envParticles = true
             ig.perf.drawSprites = false
         } else {
-            ig.perf.lighting = false
-            ig.perf.weather = false
-            ig.perf.envParticles = false
+            // ig.perf.lighting = false
+            // ig.perf.weather = false
+            // ig.perf.envParticles = false
             ig.perf.drawSprites = true
         }
     } else {
@@ -288,7 +288,6 @@ async function takeScreenshot() {
     ig.game.playerEntity.setPos(ig.game.size.x / 2, ig.game.size.y / 2)
     hideEntity(ig.game.playerEntity)
     await wait(100)
-    await wait(5e3)
 
     return ig.system.canvas.toDataURL()
 }
@@ -307,6 +306,7 @@ async function run() {
 
     // maps = ['beach/path-06', 'beach/path-07', 'wave-dng/b1/south-02', 'bergen/elevator']
     // maps = ['bergen/elevator']
+    maps = ['bergen/elevator', 'forest/path-11-behind-maze']
 
     // maps = maps.filter(map => map.startsWith('rhombus-dng'))
     console.log(maps)
