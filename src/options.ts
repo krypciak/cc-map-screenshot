@@ -1,6 +1,6 @@
 import type { Options } from 'ccmodmanager/types/mod-options'
 import { modMetadata } from './mod-metadata'
-import { takeScreenshot } from './screenshot'
+import { takeScreenshotAndShow } from './screenshot'
 
 export let Opts: ReturnType<typeof modmanager.registerAndGetModOptions<ReturnType<typeof registerOpts>>>
 
@@ -18,7 +18,7 @@ export function registerOpts() {
                         init: { key1: ig.KEY.F6 },
                         global: false,
                         pressEvent() {
-                            takeScreenshot()
+                            takeScreenshotAndShow()
                         },
                         name: 'Screenshot key',
                         description: 'Press while in game to take a full map screenshot!',

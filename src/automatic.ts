@@ -1,4 +1,4 @@
-import { resizeGame, setPerf, takeScreenshot, wait } from './screenshot'
+import { takeScreenshot, wait } from './screenshot'
 
 const fs: typeof import('fs') = (0, eval)('require("fs")')
 const path: typeof import('path') = (0, eval)('require("path")')
@@ -141,9 +141,6 @@ export async function run() {
         console.log(map, 'written')
     }
     console.log('done')
-
-    resizeGame(568, 320, 4)
-    setPerf(false)
 
     sc.model.enterReset()
     sc.model.enterRunning()

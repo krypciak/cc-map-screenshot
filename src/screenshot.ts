@@ -21,18 +21,24 @@ export function setPerf(enableFilter: boolean) {
 }
 
 export function resizeGame(w: number, h: number, scale: number) {
-    ig.system.resize(w, h, scale)
-    ig.ScreenBufferPool.clearBuffers()
-    ig.light.lightCanvas = ig.$new('canvas')
-    ig.light.lightCanvas.width = ig.system.contextWidth + 1
-    ig.light.lightCanvas.height = ig.system.contextHeight + 1
-    ig.light.lightContext = ig.system.getBufferContext(ig.light.lightCanvas)
-    ig.envParticles.width = ig.system.width + 64
-    ig.envParticles.height = ig.system.height + 64
+    const contextBackup = ig.system.context
+    try {
+        ig.system.context = ig.system.canvas.getContext('2d')
+        ig.system.resize(w, h, scale)
+        ig.ScreenBufferPool.clearBuffers()
+        ig.light.lightCanvas = ig.$new('canvas')
+        ig.light.lightCanvas.width = ig.system.contextWidth + 1
+        ig.light.lightCanvas.height = ig.system.contextHeight + 1
+        ig.light.lightContext = ig.system.getBufferContext(ig.light.lightCanvas)
+        ig.envParticles.width = ig.system.width + 64
+        ig.envParticles.height = ig.system.height + 64
 
-    for (const parallax of parallaxList) {
-        parallax.hook.size.x = w
-        parallax.hook.size.y = h
+        for (const parallax of parallaxList) {
+            parallax.hook.size.x = w
+            parallax.hook.size.y = h
+        }
+    } finally {
+        ig.system.context = contextBackup
     }
 }
 
@@ -40,48 +46,62 @@ function hideEntity(entity: ig.Entity) {
     ig.game.shownEntities[entity.id] = null
 }
 
+function fixPlantBlink() {
+    for (const entity of ig.game.entities) {
+        if (
+            !(entity instanceof ig.ENTITY.ItemDestruct) ||
+            !(entity instanceof ig.ENTITY.Destructible) ||
+            !(entity instanceof ig.ENTITY.RegenDestruct)
+        ) {
+            continue
+        }
+
+        entity.blinkTimer = 10000000
+        entity.initAnimations()
+        entity.updateSprites()
+        entity.update()
+    }
+}
+
 export async function takeScreenshot() {
-    setPerf(true)
-    removeAddon(sc.npcRunner, ig.game)
-    removeAddon(sc.commonEvents, ig.game)
+    const gameSizeBackup = { w: ig.system.width, h: ig.system.height, scale: ig.system.contextScale }
+    const cameraInBoundsBackup = ig.camera._cameraInBounds
 
-    var toKill = [
-        ig.ENTITY.Enemy,
-        sc.NpcRunnerSpawner,
-        sc.NPCRunnerEntity,
-        ig.ENTITY.NPC,
-        ig.ENTITY.Chest,
-        ig.ENTITY.EventTrigger,
-        ig.ENTITY.EnemySpawner,
-    ]
-    ig.game.entities
-        .filter(a => toKill.some(clazz => a instanceof clazz))
-        .map(a => {
-            hideEntity(a)
-            a.kill()
-        })
+    try {
+        setPerf(true)
+        ig.camera._cameraInBounds = true
 
-    ig.game.entities
-        .filter(
-            a =>
-                a instanceof ig.ENTITY.ItemDestruct ||
-                a instanceof ig.ENTITY.Destructible ||
-                a instanceof ig.ENTITY.RegenDestruct
+        removeAddon(sc.npcRunner, ig.game)
+        removeAddon(sc.commonEvents, ig.game)
+
+        var toKill = [
+            ig.ENTITY.Enemy,
+            sc.NpcRunnerSpawner,
+            sc.NPCRunnerEntity,
+            ig.ENTITY.NPC,
+            ig.ENTITY.Chest,
+            ig.ENTITY.EventTrigger,
+            ig.ENTITY.EnemySpawner,
+        ]
+        const entitiesToHideAndDisable = ig.game.entities.filter(entity =>
+            toKill.some(clazz => entity instanceof clazz)
         )
-        .forEach(entity => {
-            // @ts-expect-error
-            entity.blinkTimer = 10000000
-            // @ts-expect-error
-            entity.initAnimations()
-            entity.updateSprites()
-            entity.update()
-        })
-    resizeGame(ig.game.size.x, ig.game.size.y, 1)
-    ig.game.playerEntity.setPos(ig.game.size.x / 2, ig.game.size.y / 2)
-    hideEntity(ig.game.playerEntity)
-    await wait(100)
+        for (const entity of entitiesToHideAndDisable) {
+            hideEntity(entity)
+            entity.kill()
+        }
+        fixPlantBlink()
 
-    return ig.system.canvas.toDataURL()
+        resizeGame(ig.game.size.x, ig.game.size.y, 1)
+        hideEntity(ig.game.playerEntity)
+        await wait(100)
+
+        return ig.system.canvas.toDataURL()
+    } finally {
+        setPerf(false)
+        ig.camera._cameraInBounds = cameraInBoundsBackup
+        resizeGame(gameSizeBackup.w, gameSizeBackup.h, gameSizeBackup.scale)
+    }
 }
 
 function openImageWindow(src: string) {
