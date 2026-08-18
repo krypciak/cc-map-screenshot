@@ -5,13 +5,6 @@ export function wait(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function removeAddon(addon: ig.GameAddon, game: ig.Game) {
-    for (const key in game.addons) {
-        const arr = game.addons[key as keyof ig.Game['addons']]
-        arr.erase(addon as any)
-    }
-}
-
 export function setPerf(enableFilter: boolean) {
     ig.perf.gui = !enableFilter || Opts.enableGui
     ig.perf.lighting = !enableFilter || Opts.enableLighting
@@ -42,8 +35,13 @@ export function resizeGame(w: number, h: number, scale: number) {
     }
 }
 
-function hideEntity(entity: ig.Entity) {
+function hideEntity(entity: ig.Entity): boolean {
+    if (!ig.game.shownEntities[entity.id]) return false
     ig.game.shownEntities[entity.id] = null
+    return true
+}
+function showEntity(entity: ig.Entity) {
+    ig.game.shownEntities[entity.id] = entity
 }
 
 function fixPlantBlink() {
@@ -67,39 +65,36 @@ export async function takeScreenshot() {
     const gameSizeBackup = { w: ig.system.width, h: ig.system.height, scale: ig.system.contextScale }
     const cameraInBoundsBackup = ig.camera._cameraInBounds
 
+    let hiddenEntities: ig.Entity[] = []
+
     try {
         setPerf(true)
         ig.camera._cameraInBounds = true
 
-        removeAddon(sc.npcRunner, ig.game)
-        removeAddon(sc.commonEvents, ig.game)
+        const entityClassesToHide: (new (x: number, y: number, z: number, settings: any) => ig.Entity)[] = []
+        if (Opts.hidePlayer) entityClassesToHide.push(ig.ENTITY.Player)
+        if (Opts.hideEnemies) entityClassesToHide.push(ig.ENTITY.Enemy, ig.ENTITY.EnemySpawner)
+        if (Opts.hideNpcRunners) entityClassesToHide.push(sc.NPCRunnerEntity)
+        if (Opts.hideNpcs) entityClassesToHide.push(ig.ENTITY.NPC)
+        if (Opts.hideChests) entityClassesToHide.push(ig.ENTITY.Chest)
+        entityClassesToHide.push(ig.ENTITY.EventTrigger)
 
-        var toKill = [
-            ig.ENTITY.Enemy,
-            sc.NpcRunnerSpawner,
-            sc.NPCRunnerEntity,
-            ig.ENTITY.NPC,
-            ig.ENTITY.Chest,
-            ig.ENTITY.EventTrigger,
-            ig.ENTITY.EnemySpawner,
-        ]
-        const entitiesToHideAndDisable = ig.game.entities.filter(entity =>
-            toKill.some(clazz => entity instanceof clazz)
-        )
-        for (const entity of entitiesToHideAndDisable) {
-            hideEntity(entity)
-            entity.kill()
-        }
+        hiddenEntities = ig.game.entities
+            .filter(entity => entityClassesToHide.some(clazz => entity instanceof clazz))
+            .filter(hideEntity)
+
         fixPlantBlink()
 
         resizeGame(ig.game.size.x, ig.game.size.y, 1)
-        hideEntity(ig.game.playerEntity)
         await wait(100)
 
         return ig.system.canvas.toDataURL()
     } finally {
         setPerf(false)
         ig.camera._cameraInBounds = cameraInBoundsBackup
+
+        for (const entity of hiddenEntities) showEntity(entity)
+
         resizeGame(gameSizeBackup.w, gameSizeBackup.h, gameSizeBackup.scale)
     }
 }

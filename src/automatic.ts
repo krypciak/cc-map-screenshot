@@ -104,10 +104,20 @@ async function teleport(map: string) {
     }
 }
 
+function removeAddon(addon: ig.GameAddon, game: ig.Game) {
+    for (const key in game.addons) {
+        const arr = game.addons[key as keyof ig.Game['addons']]
+        arr.erase(addon as any)
+    }
+}
+
 export async function run() {
     ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
     sc.model.enterRunning()
     sc.model.enterGame()
+
+    removeAddon(sc.npcRunner, ig.game)
+    removeAddon(sc.commonEvents, ig.game)
 
     let maps = await findMaps()
     // maps.splice(50, 100000)
