@@ -1,9 +1,9 @@
 {
-    "id": "cc-map-image",
+    "id": "cc-map-screenshot",
     "version": "0.0.1",
     "title": "ts map image",
     "description": "ts map image",
-    "repository": "https://github.com/krypciak/cc-map-image",
+    "repository": "https://github.com/krypciak/cc-map-screenshot",
     "tags": [],
     "authors": "krypek",
     "icons": {
