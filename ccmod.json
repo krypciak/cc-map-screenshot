@@ -1,6 +1,6 @@
 {
     "id": "cc-map-screenshot",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "title": "Map screenshot",
     "description": "Take a screenshot of a full map with one button!",
     "repository": "https://github.com/krypciak/cc-map-screenshot",
