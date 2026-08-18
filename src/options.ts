@@ -13,6 +13,11 @@ export function registerOpts() {
             },
             headers: {
                 general: {
+                    keybindingNote: {
+                        type: 'INFO',
+                        name: 'The default keybinding is F6, it does not render properly',
+                        description: '',
+                    },
                     screenshotKeybinding: {
                         type: 'CONTROLS',
                         init: { key1: ig.KEY.F6 },
