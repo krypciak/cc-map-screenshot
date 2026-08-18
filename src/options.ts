@@ -91,7 +91,7 @@ export function registerOpts() {
                     },
                     hideParallax: {
                         type: 'CHECKBOX',
-                        init: false,
+                        init: true,
                         name: 'Hide parallax',
                         description: `Don't render parallaxes`,
                     },

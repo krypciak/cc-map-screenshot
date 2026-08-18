@@ -61,6 +61,12 @@ function fixPlantBlink() {
     }
 }
 
+declare global {
+    namespace ig {
+        var isTakingScreenshot: boolean | undefined
+    }
+}
+
 export async function takeScreenshot() {
     const gameSizeBackup = { w: ig.system.width, h: ig.system.height, scale: ig.system.contextScale }
     const cameraInBoundsBackup = ig.camera._cameraInBounds
@@ -68,6 +74,7 @@ export async function takeScreenshot() {
     let hiddenEntities: ig.Entity[] = []
 
     try {
+        ig.isTakingScreenshot = true
         setPerf(true)
         ig.camera._cameraInBounds = true
 
@@ -90,6 +97,7 @@ export async function takeScreenshot() {
 
         return ig.system.canvas.toDataURL()
     } finally {
+        ig.isTakingScreenshot = false
         setPerf(false)
         ig.camera._cameraInBounds = cameraInBoundsBackup
 
@@ -101,20 +109,18 @@ export async function takeScreenshot() {
 
 function openImageWindow(src: string) {
     if (ig.platform == ig.PLATFORM_TYPES.DESKTOP) {
-        const nw = (0, eval)(`require('nw.gui')`)
-        if (nw) {
+        if (window.nw) {
             fetch(src)
                 .then(r => r.blob())
                 .then(blob => {
                     const url = URL.createObjectURL(blob)
 
-                    nw.Window.open(url, {
+                    window.nw.Window.open(url, {
                         width: ig.system.canvas.width + 20,
                         height: ig.system.canvas.height + 60,
-                        focus: true,
                     })
                 })
-            nw.Clipboard.get().set(src, 'png', false)
+            window.nw.Clipboard.get().set(src, 'png', false)
         } else {
             window.open(src)
         }

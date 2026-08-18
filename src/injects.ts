@@ -31,21 +31,13 @@ export function prestartInject() {
     })
 
     ig.MAP.Background.inject({
-        preRenderChunk(...args) {
-            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return args[4]
-            return this.parent(...args)
-        },
-        preRenderScreen(...args) {
-            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
-            return this.parent(...args)
-        },
-        drawAnimated(...args) {
-            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
-            return this.parent(...args)
-        },
-        redrawChunkTile(...args) {
-            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
-            return this.parent(...args)
+        draw(x, y, width, height) {
+            if (
+                ig.isTakingScreenshot &&
+                (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax')))
+            )
+                return
+            return this.parent(x, y, width, height)
         },
     })
 
