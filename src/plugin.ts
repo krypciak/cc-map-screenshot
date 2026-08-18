@@ -1,7 +1,8 @@
 import type { PluginClass } from 'ultimate-crosscode-typedefs/modloader/mod'
 import type { Mod1 } from './types'
 import { setModMetadata } from './mod-metadata'
-import { prestartInject, run } from './screenshot'
+import { registerOpts } from './options'
+import { prestartInject } from './injects'
 
 export default class MapImage implements PluginClass {
     constructor(mod: Mod1) {
@@ -9,10 +10,11 @@ export default class MapImage implements PluginClass {
     }
 
     prestart() {
+        registerOpts()
         prestartInject()
     }
 
     async poststart() {
-        run()
+        // run()
     }
 }
