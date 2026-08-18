@@ -16,8 +16,9 @@ export function registerOpts() {
                     screenshotKeybinding: {
                         type: 'CONTROLS',
                         init: { key1: ig.KEY.F6 },
-                        global: false,
+                        global: true,
                         pressEvent() {
+                            if (sc.model.isTitle() || !ig.game.playerEntity) return
                             takeScreenshotAndShow()
                         },
                         name: 'Screenshot key',
