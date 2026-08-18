@@ -5,14 +5,4 @@
 ## [Unreleased]
 ## [1.0.0] 2026-08-18
 
-### Added
-
-- Something
-
-### Changed
-
-- Something
-
-### Fixed
-
-- Something
+Initial release
