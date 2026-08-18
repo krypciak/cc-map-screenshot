@@ -32,19 +32,19 @@ export function prestartInject() {
 
     ig.MAP.Background.inject({
         preRenderChunk(...args) {
-            if (Opts.hideParallax || this.tilesetName?.includes('parallax')) return args[4]
+            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return args[4]
             return this.parent(...args)
         },
         preRenderScreen(...args) {
-            if (Opts.hideParallax || this.tilesetName?.includes('parallax')) return
+            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
             return this.parent(...args)
         },
         drawAnimated(...args) {
-            if (Opts.hideParallax || this.tilesetName?.includes('parallax')) return
+            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
             return this.parent(...args)
         },
         redrawChunkTile(...args) {
-            if (Opts.hideParallax || this.tilesetName?.includes('parallax')) return
+            if (Opts.hideTileRendering || (Opts.hideParallax && this.tilesetName?.includes('parallax'))) return
             return this.parent(...args)
         },
     })

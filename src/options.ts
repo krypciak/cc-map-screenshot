@@ -23,12 +23,6 @@ export function registerOpts() {
                         name: 'Screenshot key',
                         description: 'Press while in game to take a full map screenshot!',
                     },
-                    hideParallax: {
-                        type: 'CHECKBOX',
-                        init: false,
-                        name: 'Hide parallax',
-                        description: `Don't render parallaxes`,
-                    },
                     enableLighting: {
                         type: 'CHECKBOX',
                         init: true,
@@ -88,6 +82,18 @@ export function registerOpts() {
                         init: true,
                         name: 'Hide chests',
                         description: 'Hide chests in screenshots',
+                    },
+                    hideTileRendering: {
+                        type: 'CHECKBOX',
+                        init: false,
+                        name: 'Hide tile rendering',
+                        description: `Don't render map tiles, idk why you would want that`,
+                    },
+                    hideParallax: {
+                        type: 'CHECKBOX',
+                        init: false,
+                        name: 'Hide parallax',
+                        description: `Don't render parallaxes`,
                     },
                 },
             },

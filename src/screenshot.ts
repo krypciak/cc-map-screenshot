@@ -103,7 +103,17 @@ function openImageWindow(src: string) {
     if (ig.platform == ig.PLATFORM_TYPES.DESKTOP) {
         const nw = (0, eval)(`require('nw.gui')`)
         if (nw) {
-            nw.Window.open(src, { min_width: 1136, min_height: 640 })
+            fetch(src)
+                .then(r => r.blob())
+                .then(blob => {
+                    const url = URL.createObjectURL(blob)
+
+                    nw.Window.open(url, {
+                        width: ig.system.canvas.width + 20,
+                        height: ig.system.canvas.height + 60,
+                        focus: true,
+                    })
+                })
             nw.Clipboard.get().set(src, 'png', false)
         } else {
             window.open(src)
