@@ -3,6 +3,7 @@
 # Change Log
 
 ## [Unreleased]
+## [1.0.1] 2026-08-19
 
 ### Changed
 
