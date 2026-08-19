@@ -13,10 +13,17 @@ export function setPerf(enableFilter: boolean) {
     ig.perf.drawSprites = !enableFilter || Opts.enableSprites
 }
 
-export function resizeGame(w: number, h: number, scale: number) {
+function wrapSetContext(func: () => void) {
     const contextBackup = ig.system.context
     try {
         ig.system.context = ig.system.canvas.getContext('2d')
+        func()
+    } finally {
+        ig.system.context = contextBackup
+    }
+}
+export function resizeGame(w: number, h: number, scale: number) {
+    wrapSetContext(() => {
         ig.system.resize(w, h, scale)
         ig.ScreenBufferPool.clearBuffers()
         ig.light.lightCanvas = ig.$new('canvas')
@@ -30,9 +37,7 @@ export function resizeGame(w: number, h: number, scale: number) {
             parallax.hook.size.x = w
             parallax.hook.size.y = h
         }
-    } finally {
-        ig.system.context = contextBackup
-    }
+    })
 }
 
 function hideEntity(entity: ig.Entity): boolean {
@@ -44,20 +49,21 @@ function showEntity(entity: ig.Entity) {
     ig.game.shownEntities[entity.id] = entity
 }
 
-function fixPlantBlink() {
+function resetEntityAnimationTimer() {
     for (const entity of ig.game.entities) {
+        if (!(entity instanceof ig.AnimatedEntity)) continue
         if (
-            !(entity instanceof ig.ENTITY.ItemDestruct) ||
-            !(entity instanceof ig.ENTITY.Destructible) ||
+            !(entity instanceof ig.ENTITY.ItemDestruct) &&
+            !(entity instanceof ig.ENTITY.Destructible) &&
             !(entity instanceof ig.ENTITY.RegenDestruct)
         ) {
-            continue
+            entity.animState.timer = 0
+        } else {
+            entity.blinkTimer = Math.random() * 5 + 1
+            entity.initAnimations()
+            entity.updateSprites()
+            entity.update()
         }
-
-        entity.blinkTimer = 10000000
-        entity.initAnimations()
-        entity.updateSprites()
-        entity.update()
     }
 }
 
@@ -67,7 +73,18 @@ declare global {
     }
 }
 
-export async function takeScreenshot() {
+const keybindingId = 'cc-map-screenshot-screenshotKeybinding'
+declare global {
+    namespace ig {
+        namespace Input {
+            interface KnownActions {
+                [keybindingId]: true
+            }
+        }
+    }
+}
+
+export function takeScreenshot() {
     const gameSizeBackup = { w: ig.system.width, h: ig.system.height, scale: ig.system.contextScale }
     const cameraInBoundsBackup = ig.camera._cameraInBounds
 
@@ -84,16 +101,27 @@ export async function takeScreenshot() {
         if (Opts.hideNpcRunners) entityClassesToHide.push(sc.NPCRunnerEntity)
         if (Opts.hideNpcs) entityClassesToHide.push(ig.ENTITY.NPC)
         if (Opts.hideChests) entityClassesToHide.push(ig.ENTITY.Chest)
-        entityClassesToHide.push(ig.ENTITY.EventTrigger)
 
         hiddenEntities = ig.game.entities
             .filter(entity => entityClassesToHide.some(clazz => entity instanceof clazz))
             .filter(hideEntity)
 
-        fixPlantBlink()
+        resetEntityAnimationTimer()
 
         resizeGame(ig.game.size.x, ig.game.size.y, 1)
-        await wait(100)
+        wrapSetContext(() => {
+            const backupFirstUpdateLoop = ig.game.firstUpdateLoop
+            ig.game.firstUpdateLoop = false
+
+            ig.camera.onPostUpdate()
+            ig.game.update()
+            if (ig.perf.draw) {
+                ig.game.draw()
+                ig.game.finalDraw()
+            }
+
+            ig.game.firstUpdateLoop = backupFirstUpdateLoop
+        })
 
         return ig.system.canvas.toDataURL()
     } finally {
@@ -104,6 +132,8 @@ export async function takeScreenshot() {
         for (const entity of hiddenEntities) showEntity(entity)
 
         resizeGame(gameSizeBackup.w, gameSizeBackup.h, gameSizeBackup.scale)
+
+        window.instanceinator?.retile()
     }
 }
 
@@ -129,7 +159,7 @@ function openImageWindow(src: string) {
     }
 }
 
-export async function takeScreenshotAndShow() {
-    const data = await takeScreenshot()
+export function takeScreenshotAndShow() {
+    const data = takeScreenshot()
     openImageWindow(data)
 }
