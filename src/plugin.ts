@@ -12,6 +12,7 @@ export default class MapImage implements PluginClass {
     prestart() {
         registerOpts()
         prestartInject()
+        // injectInjectsForAutomatic()
     }
 
     async poststart() {

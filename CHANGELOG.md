@@ -3,6 +3,11 @@
 # Change Log
 
 ## [Unreleased]
+
+### Fixed
+
+- Remove leftover injects that broke common events and the arena
+
 ## [1.0.1] 2026-08-19
 
 ### Changed

@@ -111,6 +111,34 @@ function removeAddon(addon: ig.GameAddon, game: ig.Game) {
     }
 }
 
+export function injectInjectsForAutomatic() {
+    // @ts-expect-error
+    ig.GlobalSettings.inject({
+        // @ts-expect-error
+        resolveEntitySettings(a, b) {
+            return this.parent(a, b ?? {})
+        },
+    })
+
+    sc.EnemyType.inject({
+        onload(data) {
+            try {
+                return this.parent(data)
+            } catch (e) {}
+        },
+    })
+    sc.Arena.inject({
+        onVarAccess() {},
+    })
+
+    sc.CommonEvent.inject({
+        init(name, data) {
+            data.event = []
+            this.parent(name, data)
+        },
+    })
+}
+
 export async function run() {
     ig.interact.entries.forEach(e => ig.interact.removeEntry(e))
     sc.model.enterRunning()
