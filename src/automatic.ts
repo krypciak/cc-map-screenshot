@@ -112,9 +112,7 @@ function removeAddon(addon: ig.GameAddon, game: ig.Game) {
 }
 
 export function injectInjectsForAutomatic() {
-    // @ts-expect-error
     ig.GlobalSettings.inject({
-        // @ts-expect-error
         resolveEntitySettings(a, b) {
             return this.parent(a, b ?? {})
         },
@@ -172,7 +170,7 @@ export async function run() {
         if (await fileExists(pngPath)) continue
 
         await teleport(map)
-        const data = await takeScreenshot()
+        const data = takeScreenshot()
 
         await fs.promises.mkdir(path.dirname(pngPath), { recursive: true })
         await fs.promises.writeFile(pngPath, data.replace(/^data:image\/png;base64,/, ''), 'base64')

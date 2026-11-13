@@ -67,23 +67,6 @@ function resetEntityAnimationTimer() {
     }
 }
 
-declare global {
-    namespace ig {
-        var isTakingScreenshot: boolean | undefined
-    }
-}
-
-const keybindingId = 'cc-map-screenshot-screenshotKeybinding'
-declare global {
-    namespace ig {
-        namespace Input {
-            interface KnownActions {
-                [keybindingId]: true
-            }
-        }
-    }
-}
-
 export function takeScreenshot() {
     const gameSizeBackup = { w: ig.system.width, h: ig.system.height, scale: ig.system.contextScale }
     const cameraInBoundsBackup = ig.camera._cameraInBounds
